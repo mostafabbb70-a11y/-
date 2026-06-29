@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#070710">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>AniVerse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&family=Oxanium:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg0: #070710;
+  --bg1: #0c0c1a;
+  --bg2: #111122;
+  --bg3: #16162a;
+  --card: #0f0f1e;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --p: #6c47ff;
+  --p2: #9b7fff;
+  --pink: #ff3d8a;
+  --cyan: #00d4ff;
+  --gold: #ffb800;
+  --green: #00e676;
+  --red: #ff4444;
+  --text: #f0f0ff;
+  --text2: #8888aa;
+  --text3: #444466;
+  --font: 'Cairo', sans-serif;
+  --display: 'Oxanium', sans-serif;
+  --r: 14px;
+  --rs: 10px;
+  --nav-h: 68px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg0);color:var(--text);font-family:var(--font);font-size:14px;display:flex;flex-direction:column}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ── APP SHELL ── */
+#app{flex:1;overflow:hidden;position:relative}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(var(--nav-h) + 16px);display:none;scroll-behavior:smooth}
+.screen.active{display:block}
+
+/* PLAYER MODAL - full overlay, not a screen */
+#playerModal{position:fixed;inset:0;z-index:300;background:#000;display:none;flex-direction:column;height:100dvh}
+#playerModal.open{display:flex}
+
+/* ── BOTTOM NAV ── */
+nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:rgba(7,7,16,0.96);backdrop-filter:blur(24px);border-top:1px solid var(--border);display:flex;z-index:90;padding-bottom:env(safe-area-inset-bottom)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:none;background:none;cursor:pointer;color:var(--text3);transition:color .2s;padding:8px 0}
+.nav-btn.active{color:var(--p2)}
+.nav-btn svg{width:22px;height:22px;stroke-width:1.8;fill:none;stroke:currentColor}
+.nav-btn.active svg{stroke:var(--p2)}
+.nav-label{font-family:var(--font);font-size:10px;font-weight:600}
+.nav-pip{width:4px;height:4px;border-radius:50%;background:var(--p);margin-top:2px;opacity:0;transition:opacity .2s}
+.nav-btn.active .nav-pip{opacity:1}
+
+/* ── HEADER ── */
+.top-bar{position:sticky;top:0;z-index:80;background:rgba(7,7,16,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px}
+.app-logo{font-family:var(--display);font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--p2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:.5px;flex-shrink:0}
+.search-box{flex:1;display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:50px;padding:8px 14px;cursor:pointer;transition:border-color .2s}
+.search-box:hover{border-color:var(--border2)}
+.search-box span{color:var(--text3);font-size:13px}
+.search-box svg{width:16px;height:16px;stroke:var(--text3);flex-shrink:0;fill:none;stroke-width:2}
+.icon-btn{width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:border-color .2s}
+.icon-btn:hover{border-color:var(--p)}
+.icon-btn svg{width:18px;height:18px;stroke:var(--text2);fill:none;stroke-width:1.8}
+
+/* ── SEARCH OVERLAY ── */
+#searchScreen{background:var(--bg0)}
+.search-header{padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.search-input-wrap{flex:1;position:relative}
+.search-real{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:50px;padding:10px 16px 10px 40px;color:var(--text);font-family:var(--font);font-size:14px;outline:none}
+.search-real:focus{border-color:var(--p)}
+.search-real::placeholder{color:var(--text3)}
+[dir=rtl] .search-real{padding:10px 40px 10px 16px}
+.s-icon{position:absolute;top:50%;transform:translateY(-50%);left:14px;pointer-events:none}
+[dir=rtl] .s-icon{left:auto;right:14px}
+.s-icon svg{width:16px;height:16px;stroke:var(--text3);fill:none;stroke-width:2}
+.back-btn{background:none;border:none;color:var(--text2);cursor:pointer;width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.back-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ── CHIPS / FILTERS ── */
+.chips{display:flex;gap:8px;padding:14px 16px 0;overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;padding:7px 16px;border-radius:50px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font);white-space:nowrap;display:flex;align-items:center;gap:6px}
+.chip svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2}
+.chip.active{background:linear-gradient(135deg,var(--p),var(--pink));border-color:transparent;color:#fff}
+.chip:hover:not(.active){border-color:var(--border2);color:var(--text)}
+
+/* ── SECTION ── */
+.sec{padding:18px 16px 0}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sec-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+.sec-title::before{content:'';width:3px;height:18px;background:linear-gradient(to bottom,var(--p),var(--pink));border-radius:2px;flex-shrink:0}
+.see-all{font-size:12px;color:var(--p2);background:none;border:none;cursor:pointer;font-family:var(--font)}
+
+/* ── HORIZONTAL SCROLL ── */
+.hrow{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.hrow::-webkit-scrollbar{display:none}
+
+/* ── ANIME CARD (poster) ── */
+.acard{flex-shrink:0;width:130px;border-radius:var(--rs);overflow:hidden;background:var(--card);border:1px solid var(--border);cursor:pointer;transition:transform .2s,box-shadow .2s;position:relative}
+.acard:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(108,71,255,.3)}
+.acard img{width:100%;height:185px;object-fit:cover;display:block;background:var(--bg2)}
+.acard-body{padding:7px 8px 9px}
+.acard-title{font-size:11.5px;font-weight:600;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--text)}
+.acard-score{font-size:11px;color:var(--gold);font-family:var(--display);font-weight:700;margin-top:3px;display:flex;align-items:center;gap:3px}
+.acard-score svg{width:11px;height:11px;fill:var(--gold);stroke:none}
+.acard-type{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.75);color:var(--cyan);font-size:10px;padding:2px 7px;border-radius:4px;font-family:var(--display);font-weight:700;backdrop-filter:blur(4px)}
+[dir=rtl] .acard-type{right:auto;left:6px}
+.acard-rank{position:absolute;top:6px;left:6px;background:linear-gradient(135deg,var(--p),var(--pink));color:#fff;font-size:10px;padding:2px 7px;border-radius:4px;font-family:var(--display);font-weight:800}
+[dir=rtl] .acard-rank{left:auto;right:6px}
+.acard-list{position:absolute;bottom:6px;right:6px;width:22px;height:22px;border-radius:50%;background:rgba(0,212,255,.15);border:1px solid var(--cyan);display:flex;align-items:center;justify-content:center}
+[dir=rtl] .acard-list{right:auto;left:6px}
+.acard-list svg{width:12px;height:12px;stroke:var(--cyan);fill:none;stroke-width:2.5}
+
+/* ── SKELETON ── */
+.skel{background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:300% 100%;animation:sh 1.4s infinite;border-radius:var(--rs)}
+@keyframes sh{from{background-position:100% 0}to{background-position:-100% 0}}
+
+/* ── HERO BANNER ── */
+.hero{margin:16px 16px 0;border-radius:var(--r);overflow:hidden;height:210px;position:relative;cursor:pointer}
+.hero img{width:100%;height:100%;object-fit:cover;display:block}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(7,7,16,.95) 0%,rgba(7,7,16,.3) 60%,transparent 100%)}
+.hero-body{position:absolute;bottom:0;left:0;right:0;padding:16px}
+.hero-tag{display:inline-flex;align-items:center;gap:5px;background:var(--pink);color:#fff;font-size:10px;font-weight:700;padding:3px 9px;border-radius:4px;margin-bottom:6px;font-family:var(--display)}
+.hero-tag svg{width:10px;height:10px;fill:#fff;stroke:none}
+.hero-name{font-size:20px;font-weight:900;line-height:1.2;text-shadow:0 2px 8px rgba(0,0,0,.8)}
+.hero-meta{font-size:12px;color:rgba(255,255,255,.6);margin-top:4px}
+.hero-play{position:absolute;top:50%;right:50%;transform:translate(50%,-50%);width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center}
+.hero-play svg{width:22px;height:22px;fill:#fff;stroke:none;margin-right:-3px}
+[dir=rtl] .hero-play svg{margin-right:0;margin-left:-3px}
+
+/* ── GRID ── */
+.agrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.agrid .acard{width:100%}
+.agrid .acard img{height:170px}
+
+/* ── RESULT LIST ── */
+.rcard{display:flex;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--rs);padding:10px;cursor:pointer;transition:border-color .2s;margin-bottom:8px}
+.rcard:hover{border-color:var(--border2)}
+.rcard img{width:64px;height:92px;object-fit:cover;border-radius:7px;flex-shrink:0;background:var(--bg2)}
+.rcard-info{flex:1;min-width:0}
+.rcard-title{font-size:14px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rcard-badges{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.b-score{background:rgba(255,184,0,.12);color:var(--gold)}
+.b-type{background:rgba(0,212,255,.1);color:var(--cyan);font-family:var(--display)}
+.b-eps{background:rgba(108,71,255,.12);color:var(--p2)}
+.b-stat{background:rgba(0,230,118,.1);color:var(--green)}
+.rcard-desc{font-size:12px;color:var(--text2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ── DETAIL SCREEN ── */
+#detailScreen{background:var(--bg0)}
+.detail-hero{position:relative;height:260px;overflow:hidden}
+.detail-hero img{width:100%;height:100%;object-fit:cover;display:block}
+.detail-hero-grad{position:absolute;inset:0;background:linear-gradient(to top,var(--bg0) 0%,rgba(7,7,16,.5) 60%,rgba(7,7,16,.2) 100%)}
+.detail-back{position:absolute;top:14px;right:14px;background:rgba(0,0,0,.6);border:none;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(8px)}
+[dir=rtl] .detail-back{right:auto;left:14px}
+.detail-back svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2}
+.detail-save{position:absolute;top:14px;left:14px;background:rgba(0,0,0,.6);border:none;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(8px)}
+[dir=rtl] .detail-save{left:auto;right:14px}
+.detail-save svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2}
+.detail-save.saved svg{fill:var(--pink);stroke:var(--pink)}
+.detail-body{padding:0 16px 20px}
+.detail-title{font-size:22px;font-weight:900;margin-bottom:2px}
+.detail-title-en{font-size:13px;color:var(--text2);margin-bottom:10px;font-family:var(--display)}
+.detail-stats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.detail-desc{font-size:13px;color:var(--text2);line-height:1.75;margin-bottom:14px}
+.detail-genres{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+.gtag{padding:4px 11px;border-radius:50px;background:var(--bg2);border:1px solid var(--border);font-size:11px;color:var(--text2)}
+
+/* ── EPISODES ── */
+.eps-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.eps-title{font-size:16px;font-weight:700}
+.ep-count{font-size:12px;color:var(--text3);font-family:var(--display)}
+.eps-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-height:220px;overflow-y:auto;padding-right:4px}
+[dir=rtl] .eps-grid{padding-right:0;padding-left:4px}
+.ep-btn{aspect-ratio:1;border-radius:8px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--display);transition:all .2s;display:flex;align-items:center;justify-content:center}
+.ep-btn:hover{border-color:var(--p);color:var(--p2)}
+.ep-btn.active{background:linear-gradient(135deg,var(--p),var(--pink));border-color:transparent;color:#fff}
+.ep-btn.watched{border-color:var(--green);color:var(--green);background:rgba(0,230,118,.08)}
+
+/* ── PLAYER SCREEN ── */
+#playerScreen{background:#000;display:flex;flex-direction:column}
+.player-top{background:var(--bg1);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.player-info{flex:1;min-width:0}
+.player-title{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player-ep{font-size:12px;color:var(--text2)}
+.player-frame{flex:1;position:relative;background:#000;min-height:0}
+.player-frame iframe{width:100%;height:100%;border:none;display:block;position:absolute;inset:0}
+.player-bottom{background:var(--bg1);border-top:1px solid var(--border);padding:12px 14px;flex-shrink:0}
+.server-label{font-size:11px;color:var(--text3);font-weight:600;margin-bottom:8px;font-family:var(--display)}
+.servers{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.srv-btn{padding:7px 14px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--display);transition:all .2s}
+.srv-btn.active{background:var(--p);border-color:var(--p);color:#fff}
+.quality-row{display:flex;gap:8px}
+.q-btn{padding:6px 12px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--display);transition:all .2s}
+.q-btn.active{background:var(--cyan);border-color:var(--cyan);color:#000}
+
+/* ── MY LIST ── */
+.list-filters{display:flex;gap:8px;padding:14px 16px 0;overflow-x:auto;scrollbar-width:none}
+.list-filters::-webkit-scrollbar{display:none}
+.lf-btn{flex-shrink:0;padding:7px 16px;border-radius:50px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.lf-btn.active{background:var(--p);border-color:var(--p);color:#fff}
+.litem{display:flex;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--rs);padding:10px;cursor:pointer;transition:border-color .2s;align-items:center}
+.litem:hover{border-color:var(--border2)}
+.litem img{width:52px;height:74px;object-fit:cover;border-radius:7px;flex-shrink:0;background:var(--bg2)}
+.litem-info{flex:1;min-width:0}
+.litem-title{font-size:14px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.litem-meta{font-size:11px;color:var(--text2);margin-bottom:5px}
+.litem-status{font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px}
+.litem-status svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.5}
+.litem-del{background:none;border:none;cursor:pointer;padding:4px;color:var(--text3);transition:color .2s;flex-shrink:0}
+.litem-del:hover{color:var(--red)}
+.litem-del svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ── STATUS SHEET ── */
+.sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.sheet-overlay.open{display:flex}
+.sheet{background:var(--bg1);border-radius:20px 20px 0 0;border-top:1px solid var(--border);padding:16px;width:100%;max-width:480px;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 14px}
+.sheet-title{font-size:16px;font-weight:700;margin-bottom:14px;text-align:center}
+.status-opts{display:flex;flex-direction:column;gap:8px}
+.sopt{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--rs);background:var(--bg2);border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.sopt:hover{border-color:var(--border2)}
+.sopt.active{border-color:var(--p);background:rgba(108,71,255,.1)}
+.sopt-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sopt-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2}
+.sopt-text{flex:1}
+.sopt-name{font-size:14px;font-weight:700}
+.sopt-desc{font-size:11px;color:var(--text2);margin-top:1px}
+.sheet-cancel{width:100%;margin-top:10px;padding:12px;border-radius:var(--rs);background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer}
+
+/* ── AI ── */
+.ai-wrap{display:flex;flex-direction:column;height:calc(100vh - var(--nav-h));overflow:hidden}
+.ai-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.ai-bubble{max-width:82%;padding:12px 15px;border-radius:16px;font-size:13px;line-height:1.65;animation:fadeUp .25s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.ai-bubble.bot{background:var(--bg2);border:1px solid var(--border);border-radius:16px 16px 16px 4px;align-self:flex-start}
+[dir=rtl] .ai-bubble.bot{border-radius:16px 16px 4px 16px}
+.ai-bubble.user{background:linear-gradient(135deg,var(--p),var(--pink));color:#fff;border-radius:16px 16px 4px 16px;align-self:flex-end}
+[dir=rtl] .ai-bubble.user{border-radius:16px 16px 16px 4px}
+.ai-typing{display:flex;gap:5px;align-items:center;padding:4px 0}
+.ai-typing span{width:7px;height:7px;border-radius:50%;background:var(--p2);animation:dot .6s ease infinite alternate}
+.ai-typing span:nth-child(2){animation-delay:.2s;background:var(--pink)}
+.ai-typing span:nth-child(3){animation-delay:.4s;background:var(--cyan)}
+@keyframes dot{from{transform:translateY(0)}to{transform:translateY(-7px)}}
+.ai-quick{display:flex;gap:8px;padding:10px 16px;overflow-x:auto;scrollbar-width:none;border-top:1px solid var(--border)}
+.ai-quick::-webkit-scrollbar{display:none}
+.ai-qbtn{flex-shrink:0;padding:7px 13px;border-radius:50px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font);transition:all .2s;white-space:nowrap}
+.ai-qbtn:hover{border-color:var(--p);color:var(--p2)}
+.ai-input-row{display:flex;gap:8px;padding:10px 16px 14px;border-top:1px solid var(--border);background:var(--bg0)}
+.ai-input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:50px;padding:11px 18px;color:var(--text);font-family:var(--font);font-size:13px;outline:none}
+.ai-input:focus{border-color:var(--p)}
+.ai-input::placeholder{color:var(--text3)}
+.ai-send{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--pink));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .2s}
+.ai-send:hover{opacity:.85}
+.ai-send svg{width:18px;height:18px;fill:#fff;stroke:none;transform:rotate(180deg)}
+[dir=rtl] .ai-send svg{transform:rotate(0)}
+
+/* ── PROFILE ── */
+.profile-top{text-align:center;padding:28px 16px 20px}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--pink));margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:36px;position:relative}
+.profile-ring{position:absolute;inset:-3px;border-radius:50%;border:2px solid transparent;background:linear-gradient(135deg,var(--p),var(--pink)) border-box;-webkit-mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);-webkit-mask-composite:destination-out;mask-composite:exclude}
+.profile-name{font-size:20px;font-weight:900}
+.profile-tag{font-size:12px;color:var(--p2);margin-top:3px;font-family:var(--display)}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 16px 4px}
+.scard{background:var(--card);border:1px solid var(--border);border-radius:var(--rs);padding:12px 8px;text-align:center}
+.scard-num{font-size:22px;font-weight:900;font-family:var(--display)}
+.scard-label{font-size:10px;color:var(--text2);margin-top:2px}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty svg{width:56px;height:56px;stroke:var(--text3);fill:none;stroke-width:1.2;margin-bottom:14px}
+.empty-title{font-size:17px;font-weight:700;color:var(--text2);margin-bottom:6px}
+.empty-sub{font-size:13px}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:calc(var(--nav-h) + 12px);left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg2);border:1px solid var(--border2);color:var(--text);padding:10px 20px;border-radius:50px;font-size:13px;font-family:var(--font);z-index:500;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ═══════════════ HOME ═══════════════ -->
+<div class="screen active" id="homeScreen">
+  <div class="top-bar">
+    <div class="app-logo">AniVerse</div>
+    <div class="search-box" onclick="openSearch()">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span id="searchPlaceholder">ابحث عن أنمي...</span>
+    </div>
+    <div class="icon-btn" onclick="toggleLang()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+    </div>
+  </div>
+  <div id="homeHero" class="sec" style="padding-top:14px;"></div>
+  <div class="sec">
+    <div class="sec-head"><div class="sec-title" id="t_trending">🔥 رائج الآن</div></div>
+    <div class="hrow" id="trendingRow"><div class="skel" style="width:130px;height:250px;flex-shrink:0"></div><div class="skel" style="width:130px;height:250px;flex-shrink:0"></div><div class="skel" style="width:130px;height:250px;flex-shrink:0"></div><div class="skel" style="width:130px;height:250px;flex-shrink:0"></div></div>
+  </div>
+  <div class="sec">
+    <div class="sec-head"><div class="sec-title" id="t_toprated">⭐ الأعلى تقييماً</div></div>
+    <div class="hrow" id="topRatedRow"><div class="skel" style="width:130px;height:250px;flex-shrink:0"></div><div class="skel" style="width:130px;height:250px;flex-shrink:0"></div><div class="skel" style="width:130px;height:250px;flex-shrink:0"></div></div>
+  </div>
+  <div class="sec">
+    <div class="sec-head"><div class="sec-title" id="t_airing">🆕 يُعرض الآن</div></div>
+    <div class="hrow" id="airingRow"><div class="skel" style="width:130px;height:250px;flex-shrink:0"></div><div class="skel" style="width:130px;height:250px;flex-shrink:0"></div><div class="skel" style="width:130px;height:250px;flex-shrink:0"></div></div>
+  </div>
+  <div class="sec">
+    <div class="sec-head"><div class="sec-title" id="t_upcoming">📅 قادمًا قريبًا</div></div>
+    <div class="hrow" id="upcomingRow"><div class="skel" style="width:130px;height:250px;flex-shrink:0"></div><div class="skel" style="width:130px;height:250px;flex-shrink:0"></div><div class="skel" style="width:130px;height:250px;flex-shrink:0"></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════ EXPLORE ═══════════════ -->
+<div class="screen" id="exploreScreen">
+  <div class="top-bar">
+    <div class="app-logo">AniVerse</div>
+    <div class="search-box" onclick="openSearch()">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span id="searchPlaceholder2">ابحث عن أنمي...</span>
+    </div>
+  </div>
+  <div class="chips" id="genreChips">
+    <div class="chip active" onclick="loadGenre(0,this)"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span>الكل</span></div>
+    <div class="chip" onclick="loadGenre(1,this)">⚔️ أكشن</div>
+    <div class="chip" onclick="loadGenre(22,this)">💕 رومانسي</div>
+    <div class="chip" onclick="loadGenre(4,this)">😂 كوميدي</div>
+    <div class="chip" onclick="loadGenre(10,this)">🧙 فانتازيا</div>
+    <div class="chip" onclick="loadGenre(8,this)">🎭 دراما</div>
+    <div class="chip" onclick="loadGenre(24,this)">🚀 خيال علمي</div>
+    <div class="chip" onclick="loadGenre(14,this)">👻 رعب</div>
+    <div class="chip" onclick="loadGenre(30,this)">⚽ رياضة</div>
+    <div class="chip" onclick="loadGenre(37,this)">🏫 مدرسة</div>
+    <div class="chip" onclick="loadGenre(7,this)">🔮 خارق</div>
+  </div>
+  <div class="sec" style="padding-top:14px;">
+    <div class="agrid" id="exploreGrid"><div class="skel" style="height:210px"></div><div class="skel" style="height:210px"></div><div class="skel" style="height:210px"></div><div class="skel" style="height:210px"></div><div class="skel" style="height:210px"></div><div class="skel" style="height:210px"></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════ SEARCH ═══════════════ -->
+<div class="screen" id="searchScreen">
+  <div class="search-header">
+    <button class="back-btn" onclick="closeSearch()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="search-input-wrap">
+      <div class="s-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+      <input class="search-real" id="searchInput" type="search" placeholder="ابحث عن أنمي..." autocomplete="off">
+    </div>
+  </div>
+  <div style="padding:12px 16px;" id="searchBody">
+    <div class="empty">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <div class="empty-title" id="t_search_empty">ابحث عن أنمي</div>
+      <div class="empty-sub" id="t_search_sub">اكتب اسم الأنمي اللي بتدور عليه</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ MY LIST ═══════════════ -->
+<div class="screen" id="listScreen">
+  <div class="top-bar">
+    <div class="app-logo">AniVerse</div>
+  </div>
+  <div class="list-filters">
+    <button class="lf-btn active" onclick="filterList('all',this)" id="lf_all">الكل</button>
+    <button class="lf-btn" onclick="filterList('watching',this)" id="lf_watching">أشاهد</button>
+    <button class="lf-btn" onclick="filterList('completed',this)" id="lf_completed">أتممت</button>
+    <button class="lf-btn" onclick="filterList('plantowatch',this)" id="lf_plan">سأشاهد</button>
+  </div>
+  <div class="sec" style="padding-top:14px;" id="listBody"></div>
+</div>
+
+<!-- ═══════════════ AI ═══════════════ -->
+<div class="screen" id="aiScreen">
+  <div class="top-bar">
+    <div class="app-logo">AniVerse <span style="font-size:12px;font-family:var(--font);color:var(--p2);-webkit-text-fill-color:var(--p2)">AI</span></div>
+  </div>
+  <div class="ai-wrap">
+    <div class="ai-messages" id="aiMessages">
+      <div class="ai-bubble bot" id="t_ai_welcome">أهلاً! أنا AniVerse AI 🌸 اسألني عن أي أنمي أو قولي ذوقك وهوصيلك!</div>
+    </div>
+    <div class="ai-quick" id="aiQuick">
+      <div class="ai-qbtn" onclick="askAI(this.dataset.ar)" data-ar="وصّيني بأنمي أكشن رهيب" data-en="Recommend great action anime">🔥 وصّيني أكشن</div>
+      <div class="ai-qbtn" onclick="askAI(this.dataset.ar)" data-ar="أنمي بيخلي تعيط وحزين" data-en="Anime that makes you cry">😭 أنمي يعيط</div>
+      <div class="ai-qbtn" onclick="askAI(this.dataset.ar)" data-ar="أفضل أنمي سيف وقتال" data-en="Best sword fight anime">⚔️ أنمي سيف</div>
+      <div class="ai-qbtn" onclick="askAI(this.dataset.ar)" data-ar="أنمي شبيه Naruto" data-en="Anime similar to Naruto">🎯 زي Naruto</div>
+      <div class="ai-qbtn" onclick="askAI(this.dataset.ar)" data-ar="أحسن أنمي رومانسي" data-en="Best romance anime">💕 رومانسي</div>
+      <div class="ai-qbtn" onclick="askAI(this.dataset.ar)" data-ar="أنمي إسيكاي خيال آخر" data-en="Best isekai anime">🌀 إيسيكاي</div>
+    </div>
+    <div class="ai-input-row">
+      <input class="ai-input" id="aiInput" placeholder="اسألني عن الأنمي..." onkeydown="if(event.key==='Enter')sendAI()">
+      <button class="ai-send" onclick="sendAI()">
+        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PROFILE ═══════════════ -->
+<div class="screen" id="profileScreen">
+  <div class="top-bar"><div class="app-logo">AniVerse</div></div>
+  <div class="profile-top">
+    <div class="profile-avatar">
+      <div class="profile-ring"></div>
+      🦊
+    </div>
+    <div class="profile-name" id="profileName">Anime Watcher</div>
+    <div class="profile-tag">AniVerse Member ⬡</div>
+  </div>
+  <div class="stats-row" id="statsRow"></div>
+  <div class="sec" style="padding-top:18px;">
+    <div class="sec-head"><div class="sec-title" id="t_recent">🕐 آخر ما أضفت</div></div>
+    <div id="recentList"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ DETAIL ═══════════════ -->
+<div class="screen" id="detailScreen">
+  <div class="detail-hero">
+    <img id="detailImg" src="" alt="">
+    <div class="detail-hero-grad"></div>
+    <button class="detail-back" onclick="goBack()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="detail-save" id="detailSaveBtn" onclick="openSheet()">
+      <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+    </button>
+  </div>
+  <div class="detail-body">
+    <div class="detail-title" id="detailTitle"></div>
+    <div class="detail-title-en" id="detailTitleEn"></div>
+    <div class="detail-stats" id="detailStats"></div>
+    <div class="detail-desc" id="detailDesc"></div>
+    <div class="detail-genres" id="detailGenres"></div>
+    <div class="eps-head">
+      <div class="eps-title" id="t_episodes">الحلقات</div>
+      <div class="ep-count" id="epCount"></div>
+    </div>
+    <div class="eps-grid" id="epsGrid"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ PLAYER MODAL ═══════════════ -->
+<div id="playerModal">
+  <div class="player-top">
+    <button class="back-btn" onclick="closePlayer()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="player-info">
+      <div class="player-title" id="playerTitle"></div>
+      <div class="player-ep" id="playerEp"></div>
+    </div>
+  </div>
+  <div class="player-frame" id="playerFrame">
+    <iframe id="playerIframe" allowfullscreen allow="autoplay; fullscreen" sandbox="allow-same-origin allow-scripts allow-forms allow-pointer-lock allow-top-navigation"></iframe>
+  </div>
+  <div class="player-bottom">
+    <div class="server-label" id="t_servers">السيرفرات</div>
+    <div class="servers" id="serverBtns"></div>
+    <div id="serverNote" style="display:none;font-size:11px;color:var(--gold);background:rgba(255,184,0,.08);border:1px solid rgba(255,184,0,.2);border-radius:8px;padding:7px 10px;margin-bottom:8px;line-height:1.5"></div>
+    <div class="server-label" id="t_quality">الجودة</div>
+    <div class="quality-row" id="qualityBtns"></div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<!-- ═══════════════ NAV ═══════════════ -->
+<nav>
+  <button class="nav-btn active" onclick="showScreen('homeScreen',this)">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <div class="nav-label" id="nl_home">الرئيسية</div>
+    <div class="nav-pip"></div>
+  </button>
+  <button class="nav-btn" onclick="showScreen('exploreScreen',this)">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <div class="nav-label" id="nl_explore">اكتشف</div>
+    <div class="nav-pip"></div>
+  </button>
+  <button class="nav-btn" onclick="showScreen('listScreen',this);renderList()">
+    <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+    <div class="nav-label" id="nl_list">قائمتي</div>
+    <div class="nav-pip"></div>
+  </button>
+  <button class="nav-btn" onclick="showScreen('aiScreen',this)">
+    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <div class="nav-label" id="nl_ai">AI</div>
+    <div class="nav-pip"></div>
+  </button>
+  <button class="nav-btn" onclick="showScreen('profileScreen',this);renderProfile()">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <div class="nav-label" id="nl_profile">حسابي</div>
+    <div class="nav-pip"></div>
+  </button>
+</nav>
+
+<!-- ═══════════════ STATUS SHEET ═══════════════ -->
+<div class="sheet-overlay" id="sheetOverlay" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="t_addlist">أضف للقائمة</div>
+    <div class="status-opts">
+      <div class="sopt" onclick="saveStatus('watching')">
+        <div class="sopt-icon" style="background:rgba(0,212,255,.12);color:var(--cyan)">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+        </div>
+        <div class="sopt-text">
+          <div class="sopt-name" id="t_watching">أشاهد الآن</div>
+          <div class="sopt-desc" id="t_watching_d">أنا حاليًا بشاهد الأنمي ده</div>
+        </div>
+      </div>
+      <div class="sopt" onclick="saveStatus('completed')">
+        <div class="sopt-icon" style="background:rgba(0,230,118,.12);color:var(--green)">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="sopt-text">
+          <div class="sopt-name" id="t_completed">أتممت المشاهدة</div>
+          <div class="sopt-desc" id="t_completed_d">خلصت مشاهدة الأنمي ده بالكامل</div>
+        </div>
+      </div>
+      <div class="sopt" onclick="saveStatus('plantowatch')">
+        <div class="sopt-icon" style="background:rgba(255,184,0,.12);color:var(--gold)">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="sopt-text">
+          <div class="sopt-name" id="t_plan">سأشاهده لاحقًا</div>
+          <div class="sopt-desc" id="t_plan_d">حطيت الأنمي ده في قائمة المشاهدة</div>
+        </div>
+      </div>
+    </div>
+    <button class="sheet-cancel" onclick="closeSheet()" id="t_cancel">إلغاء</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════
+//  STATE
+// ══════════════════════════════
+let lang = 'ar';
+let myList = JSON.parse(localStorage.getItem('av_list') || '[]');
+let currentAnime = null;
+let currentEp = 1;
+let currentServer = 0;
+let prevScreen = 'homeScreen';
+let listFilter = 'all';
+let exploreLoaded = false;
+
+const SERVERS = [
+  { name:'Gogoanime',   key:'gogo',    lang:'EN 🇺🇸' },
+  { name:'Zoro/Aniwatch',key:'zoro',  lang:'EN 🇺🇸' },
+  { name:'Ar-Anime',   key:'aranime', lang:'AR 🇸🇦' },
+  { name:'Witanime',   key:'witanime',lang:'AR 🇸🇦' },
+  { name:'Shahiid',    key:'shahiid', lang:'AR 🇸🇦' },
+  { name:'Anime4up',   key:'anime4up',lang:'AR 🇸🇦' },
+];
+const QUALITIES = ['Auto','1080p','720p','480p','360p'];
+
+// ══════════════════════════════
+//  LANG
+// ══════════════════════════════
+const TR = {
+  ar:{
+    searchPlaceholder:'ابحث عن أنمي...',
+    trending:'🔥 رائج الآن', toprated:'⭐ الأعلى تقييماً', airing:'🆕 يُعرض الآن', upcoming:'📅 قادمًا قريبًا',
+    search_empty:'ابحث عن أنمي', search_sub:'اكتب اسم الأنمي اللي بتدور عليه',
+    ai_welcome:'أهلاً! أنا AniVerse AI 🌸 اسألني عن أي أنمي أو قولي ذوقك وهوصيلك!',
+    ai_placeholder:'اسألني عن الأنمي...',
+    episodes:'الحلقات', servers:'السيرفرات', quality:'الجودة',
+    addlist:'أضف للقائمة', watching:'أشاهد الآن', watching_d:'أنا حاليًا بشاهد الأنمي ده',
+    completed:'أتممت المشاهدة', completed_d:'خلصت مشاهدة الأنمي ده بالكامل',
+    plan:'سأشاهده لاحقًا', plan_d:'حطيت الأنمي ده في قائمة المشاهدة',
+    cancel:'إلغاء', saved:'✅ تم الحفظ في قائمتك!', removed:'🗑️ تم الحذف',
+    nl_home:'الرئيسية',nl_explore:'اكتشف',nl_list:'قائمتي',nl_ai:'AI',nl_profile:'حسابي',
+    empty_list:'قائمتك فارغة', empty_list_sub:'ابحث وأضف أنمي لمتابعته',
+    recent:'🕐 آخر ما أضفت',
+    eps:'حلقة', score:'تقييم',
+    all:'الكل',watching_f:'أشاهد',completed_f:'أتممت',plan_f:'سأشاهد',
+    total:'الإجمالي',
+    ep_label:'الحلقة',
+    ai_error:'⚠️ في مشكلة، جرب تاني!'
+  },
+  en:{
+    searchPlaceholder:'Search anime...',
+    trending:'🔥 Trending Now', toprated:'⭐ Top Rated', airing:'🆕 Currently Airing', upcoming:'📅 Upcoming',
+    search_empty:'Search Anime', search_sub:'Type an anime name to search',
+    ai_welcome:'Hello! I\'m AniVerse AI 🌸 Ask me about any anime or tell me your taste!',
+    ai_placeholder:'Ask me about anime...',
+    episodes:'Episodes', servers:'Servers', quality:'Quality',
+    addlist:'Add to List', watching:'Watching', watching_d:'Currently watching this anime',
+    completed:'Completed', completed_d:'Finished watching this anime',
+    plan:'Plan to Watch', plan_d:'Added to my watchlist',
+    cancel:'Cancel', saved:'✅ Saved to your list!', removed:'🗑️ Removed',
+    nl_home:'Home',nl_explore:'Explore',nl_list:'My List',nl_ai:'AI',nl_profile:'Profile',
+    empty_list:'Your list is empty', empty_list_sub:'Search and add anime to track',
+    recent:'🕐 Recently Added',
+    eps:'eps', score:'Score',
+    all:'All',watching_f:'Watching',completed_f:'Completed',plan_f:'Plan to Watch',
+    total:'Total',
+    ep_label:'Episode',
+    ai_error:'⚠️ Error, try again!'
+  }
+};
+function t(k){ return TR[lang][k]||k }
+
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang==='ar'?'rtl':'ltr';
+  const sp = t('searchPlaceholder');
+  ['searchPlaceholder','searchPlaceholder2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=sp});
+  document.getElementById('searchInput').placeholder = sp;
+  document.getElementById('aiInput').placeholder = t('ai_placeholder');
+  ['trending','toprated','airing','upcoming'].forEach(k=>{
+    const el=document.getElementById('t_'+k); if(el)el.textContent=t(k);
+  });
+  ['search_empty','search_sub','ai_welcome','episodes','servers','quality','addlist',
+   'watching','watching_d','completed','completed_d','plan','plan_d','cancel','recent'].forEach(k=>{
+    const el=document.getElementById('t_'+k.replace('_d','')+( k.endsWith('_d')?'_d':'' ));
+    if(el)el.textContent=t(k);
+  });
+  ['home','explore','list','ai','profile'].forEach(k=>{
+    const el=document.getElementById('nl_'+k); if(el)el.textContent=t('nl_'+k);
+  });
+  document.getElementById('lf_all').textContent=t('all');
+  document.getElementById('lf_watching').textContent=t('watching_f');
+  document.getElementById('lf_completed').textContent=t('completed_f');
+  document.getElementById('lf_plan').textContent=t('plan_f');
+  document.getElementById('t_ai_welcome').textContent=t('ai_welcome');
+  // AI quick prompts
+  document.querySelectorAll('.ai-qbtn').forEach(b=>{
+    b.textContent = lang==='ar' ? (b.dataset.arLabel||b.textContent) : (b.dataset.en||b.textContent);
+  });
+}
+function toggleLang(){
+  lang = lang==='ar'?'en':'ar';
+  applyLang();
+}
+
+// ══════════════════════════════
+//  SCREEN NAVIGATION
+// ══════════════════════════════
+function showScreen(id, navBtn){
+  document.querySelectorAll('.screen').forEach(s=>{ s.classList.remove('active'); s.style.display=''; });
+  const sc = document.getElementById(id);
+  if(!sc) return;
+  sc.classList.add('active');
+  sc.style.display='block';
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(navBtn) navBtn.classList.add('active');
+  if(id==='exploreScreen' && !exploreLoaded){ loadGenre(0,document.querySelector('#genreChips .chip')); exploreLoaded=true; }
+}
+function goBack(){
+  showScreen(prevScreen, document.querySelector('.nav-btn.active'));
+}
+
+// ══════════════════════════════
+//  TOAST
+// ══════════════════════════════
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+// ══════════════════════════════
+//  API
+// ══════════════════════════════
+async function jikan(path){
+  try{
+    const r=await fetch('https://api.jikan.moe/v4'+path);
+    const d=await r.json();
+    return d.data||[];
+  }catch{return [];}
+}
+
+// ══════════════════════════════
+//  CARD BUILDERS
+// ══════════════════════════════
+function buildCard(a, rank){
+  const img = a.images?.jpg?.large_image_url || a.images?.jpg?.image_url || '';
+  const title = a.title||'';
+  const score = a.score ? parseFloat(a.score).toFixed(1) : '';
+  const type = a.type||'';
+  const inList = myList.find(x=>x.mal_id===a.mal_id);
+  return `
+  <div class="acard" onclick="openDetail(${a.mal_id})">
+    <img src="${img}" alt="" loading="lazy" onerror="this.style.background='var(--bg3)'">
+    ${rank?`<div class="acard-rank">#${rank}</div>`:''}
+    ${type?`<div class="acard-type">${type}</div>`:''}
+    ${inList?`<div class="acard-list"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>`:''}
+    <div class="acard-body">
+      <div class="acard-title">${title}</div>
+      ${score?`<div class="acard-score"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>${score}</div>`:''}
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════
+//  HOME
+// ══════════════════════════════
+async function loadHome(){
+  const [trend, top, air, up] = await Promise.all([
+    jikan('/top/anime?filter=bypopularity&limit=12'),
+    jikan('/top/anime?limit=12'),
+    jikan('/top/anime?filter=airing&limit=12'),
+    jikan('/top/anime?filter=upcoming&limit=12')
+  ]);
+
+  // Hero
+  if(trend.length){
+    const h = trend[0];
+    const img = h.images?.jpg?.large_image_url||h.images?.jpg?.image_url||'';
+    document.getElementById('homeHero').innerHTML=`
+    <div class="hero" onclick="openDetail(${h.mal_id})">
+      <img src="${img}" alt="">
+      <div class="hero-overlay"></div>
+      <div class="hero-play"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+      <div class="hero-body">
+        <div class="hero-tag"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> TRENDING #1</div>
+        <div class="hero-name">${h.title||''}</div>
+        <div class="hero-meta">${h.type||''} ${h.year?'· '+h.year:''} ${h.score?'· ⭐'+parseFloat(h.score).toFixed(1):''}</div>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('trendingRow').innerHTML = trend.map((a,i)=>buildCard(a,i+1)).join('');
+  document.getElementById('topRatedRow').innerHTML = top.map((a,i)=>buildCard(a,i+1)).join('');
+  document.getElementById('airingRow').innerHTML = air.map(a=>buildCard(a)).join('');
+  document.getElementById('upcomingRow').innerHTML = up.map(a=>buildCard(a)).join('');
+}
+
+// ══════════════════════════════
+//  EXPLORE
+// ══════════════════════════════
+const genreCache = {};
+async function loadGenre(gid, el){
+  document.querySelectorAll('#genreChips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  const grid = document.getElementById('exploreGrid');
+  grid.innerHTML = [...Array(9)].map(()=>`<div class="skel" style="height:210px"></div>`).join('');
+  let data = genreCache[gid];
+  if(!data){
+    data = gid===0
+      ? await jikan('/top/anime?filter=bypopularity&limit=18')
+      : await jikan(`/anime?genres=${gid}&order_by=score&sort=desc&limit=18&sfw=true`);
+    genreCache[gid] = data;
+  }
+  grid.innerHTML = data.map(a=>buildCard(a)).join('');
+}
+
+// ══════════════════════════════
+//  SEARCH
+// ══════════════════════════════
+function openSearch(){
+  prevScreen = document.querySelector('.screen.active')?.id||'homeScreen';
+  showScreen('searchScreen', null);
+  setTimeout(()=>document.getElementById('searchInput').focus(),200);
+}
+function closeSearch(){
+  document.getElementById('searchInput').value='';
+  document.getElementById('searchBody').innerHTML=`
+  <div class="empty">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <div class="empty-title">${t('search_empty')}</div>
+    <div class="empty-sub">${t('search_sub')}</div>
+  </div>`;
+  showScreen(prevScreen, document.querySelector('.nav-btn.active'));
+}
+
+let searchTimer;
+document.getElementById('searchInput').addEventListener('input', e=>{
+  clearTimeout(searchTimer);
+  const q=e.target.value.trim();
+  if(!q){closeSearch();openSearch();return;}
+  searchTimer = setTimeout(()=>doSearch(q),500);
+});
+
+async function doSearch(q){
+  document.getElementById('searchBody').innerHTML=`<div class="skel" style="height:92px;margin-bottom:8px"></div>`.repeat(4);
+  const data = await jikan(`/anime?q=${encodeURIComponent(q)}&limit=15&sfw=true`);
+  if(!data.length){
+    document.getElementById('searchBody').innerHTML=`<div class="empty"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><div class="empty-title">لا نتائج</div><div class="empty-sub">جرب كلمة تانية</div></div>`;
+    return;
+  }
+  document.getElementById('searchBody').innerHTML = data.map(a=>{
+    const img=a.images?.jpg?.image_url||'';
+    const score=a.score?`<span class="badge b-score">⭐ ${parseFloat(a.score).toFixed(1)}</span>`:'';
+    const type=a.type?`<span class="badge b-type">${a.type}</span>`:'';
+    const eps=a.episodes?`<span class="badge b-eps">${a.episodes} ${t('eps')}</span>`:'';
+    const desc=(a.synopsis||'').substring(0,110)+'...';
+    return `<div class="rcard" onclick="openDetail(${a.mal_id})">
+      <img src="${img}" alt="" onerror="this.style.background='var(--bg2)'">
+      <div class="rcard-info">
+        <div class="rcard-title">${a.title||''}</div>
+        <div class="rcard-badges">${score}${type}${eps}</div>
+        <div class="rcard-desc">${desc}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════
+//  DETAIL
+// ══════════════════════════════
+async function openDetail(malId){
+  prevScreen = document.querySelector('.screen.active')?.id||'homeScreen';
+  document.getElementById('detailTitle').textContent='...';
+  document.getElementById('detailTitleEn').textContent='';
+  document.getElementById('detailImg').src='';
+  document.getElementById('detailStats').innerHTML='';
+  document.getElementById('detailDesc').textContent='';
+  document.getElementById('detailGenres').innerHTML='';
+  document.getElementById('epsGrid').innerHTML='<div class="skel" style="height:44px;grid-column:1/-1"></div>';
+  document.getElementById('epCount').textContent='';
+  // show detail screen without touching nav active state
+  document.querySelectorAll('.screen').forEach(s=>{ s.classList.remove('active'); s.style.display=''; });
+  const ds = document.getElementById('detailScreen');
+  ds.classList.add('active');
+  ds.style.display='block';
+  ds.scrollTop=0;
+
+  const data = await jikan(`/anime/${malId}/full`);
+  const a = Array.isArray(data)?data[0]:data;
+  if(!a){return;}
+  currentAnime = a;
+
+  const img = a.images?.jpg?.large_image_url||a.images?.jpg?.image_url||'';
+  document.getElementById('detailImg').src=img;
+  document.getElementById('detailTitle').textContent=a.title||'';
+  document.getElementById('detailTitleEn').textContent=a.title_english||a.title_japanese||'';
+
+  const score=a.score?`<span class="badge b-score">⭐ ${parseFloat(a.score).toFixed(1)}</span>`:'';
+  const type=a.type?`<span class="badge b-type">${a.type}</span>`:'';
+  const eps=a.episodes?`<span class="badge b-eps">${a.episodes} ${t('eps')}</span>`:'';
+  const rank=a.rank?`<span class="badge" style="background:rgba(0,230,118,.1);color:var(--green)">#${a.rank}</span>`:'';
+  const yr=a.year?`<span class="badge" style="background:rgba(255,184,0,.1);color:var(--gold)">${a.year}</span>`:'';
+  document.getElementById('detailStats').innerHTML=score+type+eps+rank+yr;
+  document.getElementById('detailDesc').textContent=a.synopsis||(lang==='ar'?'لا يوجد وصف':'No description');
+  document.getElementById('detailGenres').innerHTML=(a.genres||[]).map(g=>`<span class="gtag">${g.name}</span>`).join('');
+
+  // episodes
+  const epCount = a.episodes||0;
+  document.getElementById('epCount').textContent = epCount ? `${epCount} ${t('eps')}` : '';
+  if(epCount>0){
+    const watched = (myList.find(x=>x.mal_id===a.mal_id)||{}).watchedEps||[];
+    let html='';
+    for(let i=1;i<=epCount;i++){
+      const isW=watched.includes(i);
+      html+=`<button class="ep-btn ${isW?'watched':''}" onclick="openPlayer(${i})">${i}</button>`;
+    }
+    document.getElementById('epsGrid').innerHTML=html;
+  } else {
+    document.getElementById('epsGrid').innerHTML=`<div style="grid-column:1/-1;color:var(--text3);font-size:12px;padding:8px 0">${lang==='ar'?'حلقات غير متاحة':'No episodes data'}</div>`;
+  }
+
+  // save btn state
+  const inList = myList.find(x=>x.mal_id===a.mal_id);
+  const saveBtn = document.getElementById('detailSaveBtn');
+  saveBtn.classList.toggle('saved', !!inList);
+}
+
+// ══════════════════════════════
+//  PLAYER
+// ══════════════════════════════
+function openPlayer(ep){
+  if(!currentAnime) return;
+  currentEp = ep;
+  currentServer = 0;
+
+  document.getElementById('playerTitle').textContent = currentAnime.title||'';
+  document.getElementById('playerEp').textContent = t('ep_label')+' '+ep;
+
+  buildServerBtns();
+  buildQualityBtns();
+  loadStream();
+
+  document.querySelectorAll('.ep-btn').forEach(b=>b.classList.remove('active'));
+  const allBtns = document.querySelectorAll('.ep-btn');
+  if(allBtns[ep-1]) allBtns[ep-1].classList.add('active');
+
+  // Open as modal overlay - don't touch screens
+  document.getElementById('playerModal').classList.add('open');
+}
+
+function closePlayer(){
+  document.getElementById('playerModal').classList.remove('open');
+  document.getElementById('playerIframe').src='about:blank';
+}
+
+function buildServerBtns(){
+  document.getElementById('serverBtns').innerHTML = SERVERS.map((s,i)=>`
+    <button class="srv-btn ${i===currentServer?'active':''}" onclick="switchServer(${i})">
+      ${s.name} <span style="font-size:10px;opacity:.7">${s.lang}</span>
+    </button>`
+  ).join('');
+}
+function buildQualityBtns(){
+  document.getElementById('qualityBtns').innerHTML = QUALITIES.map((q,i)=>
+    `<button class="q-btn ${i===0?'active':''}" onclick="switchQuality(this)">${q}</button>`
+  ).join('');
+}
+function switchServer(i){
+  currentServer=i;
+  buildServerBtns();
+  loadStream();
+}
+function switchQuality(el){
+  document.querySelectorAll('.q-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function slugify(str){
+  return (str||'').toLowerCase()
+    .replace(/[^a-z0-9\s-]/g,'')
+    .trim().replace(/\s+/g,'-');
+}
+
+function loadStream(){
+  if(!currentAnime) return;
+  const rawTitle = currentAnime.title||'';
+  const enTitle  = currentAnime.title_english||rawTitle;
+  const slug     = slugify(enTitle);
+  const malId    = currentAnime.mal_id;
+  const ep       = currentEp;
+  const srv      = SERVERS[currentServer].key;
+  let url='';
+
+  if(srv==='gogo'){
+    url = `https://gogoanime3.co/watch/${slug}-episode-${ep}`;
+  } else if(srv==='zoro'){
+    url = `https://aniwatch.to/watch/${slug}-${malId}?ep=${ep}`;
+  } else if(srv==='aranime'){
+    // ar-anime.com - Arabic subbed/dubbed
+    url = `https://ar-anime.com/?s=${encodeURIComponent(rawTitle)}`;
+  } else if(srv==='witanime'){
+    // witanime.cam - Arabic subbed
+    url = `https://witanime.cyou/?s=${encodeURIComponent(rawTitle)}`;
+  } else if(srv==='shahiid'){
+    // shahiid anime - Arabic dubbed/subbed
+    url = `https://shahiid-anime.net/?s=${encodeURIComponent(rawTitle)}`;
+  } else if(srv==='anime4up'){
+    // anime4up - Arabic subbed/dubbed
+    url = `https://anime4up.cam/?s=${encodeURIComponent(rawTitle)}`;
+  }
+
+  // Show note for Arabic servers (they open search page, user picks episode)
+  const noteEl = document.getElementById('serverNote');
+  if(['aranime','witanime','shahiid','anime4up'].includes(srv)){
+    noteEl.style.display='block';
+    noteEl.textContent = '⚠️ السيرفرات العربية هتفتح صفحة البحث — دوس على الأنمي واختار الحلقة';
+  } else {
+    noteEl.style.display='none';
+  }
+
+  document.getElementById('playerIframe').src = url;
+}
+
+// ══════════════════════════════
+//  STATUS SHEET
+// ══════════════════════════════
+function openSheet(){
+  document.getElementById('sheetOverlay').classList.add('open');
+}
+function closeSheet(){
+  document.getElementById('sheetOverlay').classList.remove('open');
+}
+function saveStatus(status){
+  if(!currentAnime) return;
+  myList = myList.filter(x=>x.mal_id!==currentAnime.mal_id);
+  myList.unshift({
+    mal_id: currentAnime.mal_id,
+    title: currentAnime.title,
+    title_en: currentAnime.title_english||'',
+    image: currentAnime.images?.jpg?.image_url||'',
+    score: currentAnime.score,
+    episodes: currentAnime.episodes,
+    type: currentAnime.type,
+    year: currentAnime.year,
+    status,
+    watchedEps:[],
+    addedAt: Date.now()
+  });
+  localStorage.setItem('av_list', JSON.stringify(myList));
+  document.getElementById('detailSaveBtn').classList.add('saved');
+  closeSheet();
+  toast(t('saved'));
+}
+
+// ══════════════════════════════
+//  MY LIST
+// ══════════════════════════════
+function filterList(f, el){
+  listFilter=f;
+  document.querySelectorAll('.lf-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderList();
+}
+function renderList(){
+  const filtered = listFilter==='all' ? myList : myList.filter(a=>a.status===listFilter);
+  if(!filtered.length){
+    document.getElementById('listBody').innerHTML=`
+    <div class="empty">
+      <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      <div class="empty-title">${t('empty_list')}</div>
+      <div class="empty-sub">${t('empty_list_sub')}</div>
+    </div>`;
+    return;
+  }
+  const statusInfo = {
+    watching:  {label:t('watching_f'),  color:'var(--cyan)',  icon:'<circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>'},
+    completed: {label:t('completed_f'), color:'var(--green)', icon:'<polyline points="20 6 9 17 4 12"/>'},
+    plantowatch:{label:t('plan_f'),     color:'var(--gold)',  icon:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'}
+  };
+  document.getElementById('listBody').innerHTML = filtered.map(a=>{
+    const si = statusInfo[a.status]||statusInfo.watching;
+    return `
+    <div style="margin-bottom:8px;">
+    <div class="litem" onclick="openDetail(${a.mal_id})">
+      <img src="${a.image}" alt="" onerror="this.style.background='var(--bg2)'">
+      <div class="litem-info">
+        <div class="litem-title">${a.title}</div>
+        <div class="litem-meta">${a.score?'⭐'+parseFloat(a.score).toFixed(1):''} ${a.type?'· '+a.type:''} ${a.episodes?'· '+a.episodes+' '+t('eps'):''}</div>
+        <div class="litem-status" style="color:${si.color}">
+          <svg viewBox="0 0 24 24">${si.icon}</svg>${si.label}
+        </div>
+      </div>
+      <button class="litem-del" onclick="event.stopPropagation();removeFromList(${a.mal_id})">
+        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+      </button>
+    </div>
+    </div>`;
+  }).join('');
+}
+function removeFromList(malId){
+  myList = myList.filter(a=>a.mal_id!==malId);
+  localStorage.setItem('av_list',JSON.stringify(myList));
+  renderList();
+  toast(t('removed'));
+}
+
+// ══════════════════════════════
+//  PROFILE
+// ══════════════════════════════
+function renderProfile(){
+  const total=myList.length;
+  const watching=myList.filter(a=>a.status==='watching').length;
+  const completed=myList.filter(a=>a.status==='completed').length;
+  const plan=myList.filter(a=>a.status==='plantowatch').length;
+  document.getElementById('statsRow').innerHTML=`
+  <div class="scard"><div class="scard-num" style="color:var(--p2)">${total}</div><div class="scard-label">${t('total')}</div></div>
+  <div class="scard"><div class="scard-num" style="color:var(--cyan)">${watching}</div><div class="scard-label">${t('watching_f')}</div></div>
+  <div class="scard"><div class="scard-num" style="color:var(--green)">${completed}</div><div class="scard-label">${t('completed_f')}</div></div>
+  <div class="scard"><div class="scard-num" style="color:var(--gold)">${plan}</div><div class="scard-label">${t('plan_f')}</div></div>`;
+  document.getElementById('t_recent').textContent=t('recent');
+  const rec = myList.slice(0,4);
+  if(!rec.length){
+    document.getElementById('recentList').innerHTML=`<div class="empty"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><div class="empty-title">${t('empty_list')}</div></div>`;
+    return;
+  }
+  document.getElementById('recentList').innerHTML=rec.map(a=>`
+  <div style="margin-bottom:8px;">
+  <div class="litem" onclick="openDetail(${a.mal_id})">
+    <img src="${a.image}" alt="" onerror="this.style.background='var(--bg2)'">
+    <div class="litem-info">
+      <div class="litem-title">${a.title}</div>
+      <div class="litem-meta">${a.score?'⭐'+parseFloat(a.score).toFixed(1)+' · ':''} ${a.type||''}</div>
+    </div>
+  </div>
+  </div>`).join('');
+}
+
+// ══════════════════════════════
+//  AI
+// ══════════════════════════════
+async function sendAI(){
+  const inp = document.getElementById('aiInput');
+  const msg = inp.value.trim();
+  if(!msg) return;
+  inp.value='';
+  askAI(msg);
+}
+async function askAI(msg){
+  const chat = document.getElementById('aiMessages');
+  chat.innerHTML+=`<div class="ai-bubble user">${msg}</div>`;
+  chat.innerHTML+=`<div class="ai-bubble bot" id="aiLoading"><div class="ai-typing"><span></span><span></span><span></span></div></div>`;
+  chat.scrollTop=chat.scrollHeight;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1000,
+        system:`أنت مساعد أنمي خبير اسمك "AniVerse AI". ${lang==='ar'?'تتكلم بالعامية المصرية المرحة.':'Speak in friendly English.'}
+قائمة المستخدم الحالية: ${myList.map(a=>a.title).join(', ')||'فارغة'}
+قدم توصيات حقيقية مع أسماء أنمي، وصف قصير لكل واحد. استخدم emojis. كن مختصر ومفيد. max 3-4 توصيات.`,
+        messages:[{role:'user',content:msg}]
+      })
+    });
+    const d=await res.json();
+    const reply=d.content?.[0]?.text||t('ai_error');
+    document.getElementById('aiLoading').innerHTML=reply.replace(/\n/g,'<br>');
+  }catch{
+    document.getElementById('aiLoading').innerHTML=t('ai_error');
+  }
+  chat.scrollTop=chat.scrollHeight;
+}
+
+// ══════════════════════════════
+//  INIT
+// ══════════════════════════════
+applyLang();
+loadHome();
+</script>
+</body>
+</html>
